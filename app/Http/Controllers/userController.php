@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\User_Company;
 use Error;
 use Exception;
-
+use Illuminate\Support\Facades\DB;
 
 class userController extends Controller
 {
@@ -35,6 +37,8 @@ class userController extends Controller
             $phone = $request->phone;
             $birth_date = $request->birth_date;
             $city = $request->city;
+            $companies = $request->companies;
+
 
             if (!$name) {
                 throw new Exception('Precisa informar nome.');
@@ -60,14 +64,41 @@ class userController extends Controller
                 }
             }
 
-            $user =  new User();
-            $user->email = $email;
-            $user->name =  $name;
-            $user->phone = $phone;
-            $user->birth_date = $birth_date;
-            $user->city = $city;
-            $user->save();
-            return response()->json(['message' => "Usuario criado com sucesso"], 201);
+            if (count($companies) >= 1) {
+                $listCompanies = array();
+
+                foreach ($companies as $company => $value) {
+                    $company_id = $value['company_id'];
+                    $listCompanies[$company] = $company_id;
+                }
+
+                $existCompanies = DB::table('company')->whereIn('id', $listCompanies)->get();
+
+                if (count($existCompanies) === 0 || count($existCompanies) !== count($listCompanies)) {
+                    throw new Exception('Todas as empresas informadas precisan existir');
+                }
+
+                $user =  new User();
+                $user->email = $email;
+                $user->name =  $name;
+                $user->phone = $phone;
+                $user->birth_date = str_replace('/', '-', $birth_date);
+                $user->city = $city;
+                $user->save();
+
+                foreach ($listCompanies as $index => $value) {
+                    $newRelationUserCompany = new User_Company();
+                    $newRelationUserCompany->user_id = $user->id;
+                    $newRelationUserCompany->company_id = $value;
+                    $newRelationUserCompany->save();
+                }
+            }
+
+
+
+
+
+            return response()->json($user, 201);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
@@ -173,10 +204,9 @@ class userController extends Controller
             if (!$findUser) {
                 throw new Exception('Usuario não cadastrado');
             }
-             User::destroy($fullId);
+            User::destroy($fullId);
 
             return response()->json(['message' => 'Usuario deletado com sucesso'], 200);
-
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
