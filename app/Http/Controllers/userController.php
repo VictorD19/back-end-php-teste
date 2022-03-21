@@ -64,6 +64,13 @@ class userController extends Controller
                 }
             }
 
+            $user =  new User();
+            $user->email = $email;
+            $user->name =  $name;
+            $user->phone = $phone;
+            $user->birth_date = str_replace('/', '-', $birth_date);
+            $user->city = $city;
+
             if (count($companies) >= 1) {
                 $listCompanies = array();
 
@@ -77,13 +84,6 @@ class userController extends Controller
                 if (count($existCompanies) === 0 || count($existCompanies) !== count($listCompanies)) {
                     throw new Exception('Todas as empresas informadas precisan existir');
                 }
-
-                $user =  new User();
-                $user->email = $email;
-                $user->name =  $name;
-                $user->phone = $phone;
-                $user->birth_date = str_replace('/', '-', $birth_date);
-                $user->city = $city;
                 $user->save();
 
                 foreach ($listCompanies as $index => $value) {
@@ -92,10 +92,9 @@ class userController extends Controller
                     $newRelationUserCompany->company_id = $value;
                     $newRelationUserCompany->save();
                 }
+            }else{
+                $user->save();
             }
-
-
-
 
 
             return response()->json($user, 201);
