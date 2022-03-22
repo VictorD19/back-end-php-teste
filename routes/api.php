@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\userController;
+use App\Http\Controllers\CompanyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,8 +17,14 @@ use App\Http\Controllers\userController;
 */
 
 
-Route::get('/user', [UserController::class,'index']);
-Route::post('/user', [UserController::class,'store']);
-Route::get('/user/{id}', [UserController::class,'show']);
-Route::patch('/user/{id}', [UserController::class,'update']);
-Route::delete('/user/{id}', [UserController::class,'destroy']);
+Route::get('/user', [UserController::class, 'index']);
+Route::post('/user', [UserController::class, 'store']);
+Route::get('/user/{id}', [UserController::class, 'show']);
+Route::patch('/user/{id}', [UserController::class, 'update']);
+Route::delete('/user/{id}', [UserController::class, 'destroy']);
+
+Route::get('/companies', [CompanyController::class, 'index']);
+Route::post('/company', [CompanyController::class, 'store']);
+Route::get('/company/{id}', [CompanyController::class, 'show']);
+// Route::patch('/user/{id}', [UserController::class,'update']);
+// Route::delete('/user/{id}', [UserController::class,'destroy']);
