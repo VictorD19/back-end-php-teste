@@ -12,6 +12,6 @@ class User extends Model
     protected $hidden =['pivot'];
 
     public function companys (){
-        return $this->belongsToMany(Company::class);
+        return $this->belongsToMany(Company::class,'user_company');
     }
 }

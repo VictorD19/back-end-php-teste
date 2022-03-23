@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Company;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\User_Company;
@@ -19,8 +18,18 @@ class userController extends Controller
      */
     public function index()
     {
-        $allUser = User::all();
-        return $allUser;
+        try {
+            $User = new User();
+            $allUser = $User->all();
+            foreach ( $allUser as $key => $user) {
+                $user->companys;
+
+            }
+            return response( $allUser->toJson());
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+        
     }
 
     /**
@@ -50,6 +59,9 @@ class userController extends Controller
 
             if (count($existUser) === 1) {
                 throw new Exception('Ja existe usuario cadastrado com este email.');
+            }
+            if(!is_array($companies)){
+                throw new Exception('Precisa informar empresas');
             }
 
             if ($birth_date) {
@@ -94,7 +106,7 @@ class userController extends Controller
                 }
             }else{
                 $user->save();
-            }
+            } 
 
 
             return response()->json($user, 201);
