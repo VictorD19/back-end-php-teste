@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Address;
 use App\Models\Company;
+use App\Models\User;
+use App\Models\User_Company;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -17,12 +19,14 @@ class CompanyController extends Controller
     public function index()
     {
         try {
-            $listCompanies = Company::all();
+            $company = new Company();
+            $listCompanies =  $company->all();
             foreach ($listCompanies as $key => $company) {
-                $address = Company::find($company->id)->address;
-                $company->street =  $address->street;
-                $company->city =  $address->city;
-                $company->state =  $address->state;;
+                $address = $company->find($company->id)->address;
+                $company->street =  $address->street ?? '';
+                $company->city =  $address->city ?? '';
+                $company->state =  $address->state ?? '';
+                $company->users;
             }
             return response()->json($listCompanies);
         } catch (Exception $e) {
@@ -46,7 +50,7 @@ class CompanyController extends Controller
             $street = $request->street;
             $city = $request->city;
             $state = $request->state;
-
+            $users = $request->users;
             if (!$name) {
                 throw new Exception('Precisa informar um nome.');
             }
@@ -66,25 +70,47 @@ class CompanyController extends Controller
             if (!$state) {
                 throw new Exception('Precisa informar um estado.');
             }
+            
+           
 
             $existCnpj = Company::where('cnpj', $cnpj)->first();
 
             if ($existCnpj) {
                 throw new Exception('Empresa com cnpj ja cadastrada.');
             }
-
             $newCompany = new Company();
             $newCompany->name = $name;
             $newCompany->cnpj = $cnpj;
-            $newCompany->save();
 
+            if (count($users) >= 1) {
+                $existUser = array();
+                foreach ($users as $key => $user) {
+                    $findUser = User::find($user['user_id']);
+                    if ($findUser) {
+                        array_push($existUser, $findUser->id);
+                    }
+                }
+                if (!(count($existUser) === count($users))) {
+                    throw new Exception('Todos os usuarios informado precisam existir!');
+                }
+
+                $newCompany->save();
+
+                foreach ($existUser as $key => $userId) {
+                    $newRelationUserCompany = new User_Company();
+                    $newRelationUserCompany->user_id = $userId;
+                    $newRelationUserCompany->company_id = $newCompany->id;
+                    $newRelationUserCompany->save();
+                }
+            } else {
+                $newCompany->save();
+            }
             $newAddress = new Address();
             $newAddress->company_id = $newCompany->id;
             $newAddress->street = $street;
             $newAddress->state = $state;
             $newAddress->city = $city;
             $newAddress->save();
-
 
             return response()->json(['message' => 'Empresa criada com sucesso.'], 201);
         } catch (Exception $e) {
@@ -110,11 +136,10 @@ class CompanyController extends Controller
             if (!$findCompany) {
                 throw new Exception('Empresa não encontrada.');
             }
-            $address = Company::find($findCompany->id)->address;
-            $findCompany->street =  $address->street;
-            $findCompany->city =  $address->city;
-            $findCompany->state =  $address->state;;
-            return response()->json($findCompany);
+            $findCompany->address;
+            $findCompany->users;
+
+            return response($findCompany->toJson());
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
@@ -148,7 +173,7 @@ class CompanyController extends Controller
             if (!$findCompany) {
                 throw new Exception('Empresa não encontrada.');
             }
-            
+
             if ($cnpj) {
                 $existCnpj = Company::where('cnpj', $cnpj)->first();
                 if ($existCnpj) {
@@ -158,22 +183,22 @@ class CompanyController extends Controller
 
 
 
-            $findCompany->name =  $name ?: $findCompany->name;
-            $findCompany->cnpj =  $cnpj ?: $findCompany->cnpj;
+            $findCompany->name =  $name ?? $findCompany->name;
+            $findCompany->cnpj =  $cnpj ?? $findCompany->cnpj;
 
 
             $addressCompany = $findCompany->address;
-            $addressCompany->street = $street ?: $addressCompany->street;
-            $addressCompany->city = $city ?: $addressCompany->city;
-            $addressCompany->state = $state ?: $addressCompany->state;
-            
+            $addressCompany->street = $street ?? $addressCompany->street;
+            $addressCompany->city = $city ?? $addressCompany->city;
+            $addressCompany->state = $state ?? $addressCompany->state;
+
             $addressCompany->save();
             $findCompany->save();
-            unset( $findCompany->address->id);
-            unset( $findCompany->address->company_id);
-            unset( $findCompany->address->created_at);
-            unset( $findCompany->address->updated_at);
-        
+            // unset($findCompany->address->id);
+            // unset($findCompany->address->company_id);
+            // unset($findCompany->address->created_at);
+            // unset($findCompany->address->updated_at);
+
             return response()->json($findCompany, 200);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
