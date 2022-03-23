@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Company extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'cnpj','address_id'];
+    protected $table = 'company';
+    protected $fillable = ['name', 'cnpj'];
     public function address(){
-        return $this->hasOne(Company::class,'address_id');
+        return $this->hasOne(Address::class,'company_id');
     }
-    public function user (){
-        return $this->belongsToMany(User::class,'user_company','user_id', 'company_id');
+    public function users (){
+        return $this->belongsToMany(User::class,'user_company');
     }
 }

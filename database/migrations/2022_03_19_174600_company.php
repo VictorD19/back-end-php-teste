@@ -16,16 +16,11 @@ return new class extends Migration
         Schema::create('company', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name')->nullable();
-            $table->string('cnpj')->nullable();
-            $table->integer('address_id')->nullable()->unsigned();
+            $table->string('cnpj')->nullable()->unique();
             $table->dateTime('created_at')->nullable()->default(Date('Y/m/d'));
             $table->dateTime('updated_at')->nullable()->default(Date('Y/m/d'));
         });
-        Schema::table('company', function (Blueprint $table) {
-            $table->foreign('address_id')->references('id')->on('address')->onDelete('cascade');
-           
-           
-        });
+     
     }
 
     /**
