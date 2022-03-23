@@ -13,7 +13,7 @@ class Company extends Model
     public function address(){
         return $this->hasOne(Address::class,'company_id');
     }
-    public function user (){
-        return $this->belongsToMany(User::class,'user_company','user_id', 'company_id');
+    public function users (){
+        return $this->belongsToMany(User::class,'user_company');
     }
 }

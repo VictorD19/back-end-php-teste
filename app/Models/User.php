@@ -9,8 +9,9 @@ class User extends Model
 {
     use HasFactory;
     protected $fillable = ['name', 'email', 'phone', 'birth_date', 'city'];
+    protected $hidden =['pivot'];
 
-    public function company (){
-        return $this->belongsToMany(Company::class,'user_company','user_id', 'company_id');
+    public function companys (){
+        return $this->belongsToMany(Company::class);
     }
 }
