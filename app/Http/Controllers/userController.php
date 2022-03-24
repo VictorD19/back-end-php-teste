@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\User_Company;
@@ -21,15 +22,20 @@ class userController extends Controller
         try {
             $User = new User();
             $allUser = $User->all();
-            foreach ( $allUser as $key => $user) {
+            foreach ($allUser as $key => $user) {
                 $user->companys;
 
+                foreach ($user->companys as $key => $company) {
+                    $findCompany = Company::find($company->id);
+                    $findCompany->address;
+                    $company->address = $findCompany->address;;
+                    # code...
+                }
             }
-            return response( $allUser->toJson());
+            return response($allUser->toJson());
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
-        
     }
 
     /**
@@ -60,7 +66,7 @@ class userController extends Controller
             if (count($existUser) === 1) {
                 throw new Exception('Ja existe usuario cadastrado com este email.');
             }
-            if(!is_array($companies)){
+            if (!is_array($companies)) {
                 throw new Exception('Precisa informar empresas');
             }
 
@@ -104,9 +110,11 @@ class userController extends Controller
                     $newRelationUserCompany->company_id = $value;
                     $newRelationUserCompany->save();
                 }
-            }else{
+            
+            } else {
                 $user->save();
-            } 
+            }
+            $user->companys;
 
 
             return response()->json($user, 201);
@@ -133,6 +141,14 @@ class userController extends Controller
             if (!$findUser) {
                 throw new Exception('Usuario não encontrado.');
             }
+            $findUser->companys; 
+            foreach ($findUser->companys as $key => $company) {
+                $company = Company::find($company->id);
+                
+                $findUser->companys[$key]->address = $company->address;
+                # code...
+            }
+            
             return response()->json($findUser);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
@@ -155,12 +171,19 @@ class userController extends Controller
             $phone = $request->phone;
             $birth_date = $request->birth_date;
             $city = $request->city;
+            $companies = $request->companies;
 
             if ($fullId === 0  || !$id) {
                 throw new Exception('Informar um id Valido.');
             }
+            
+            if ($email ) {
+                $regex = '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
+                $validEmail =  preg_match($regex, $email);
+                if(!$validEmail){
+                    throw new Exception('Formato de email invalido.');
 
-            if ($email) {
+                }
                 $existEmail = User::whereEmail($email)->get();
                 if (count($existEmail) === 1) {
                     throw new Exception('Email ja esta cadastrado.');
@@ -179,11 +202,38 @@ class userController extends Controller
                     throw new Exception('Data invalida, verifique o dia ou mes informado!.');
                 }
             }
+            if (!is_array($companies)) {
+                throw new Exception("Precisa mandar um array no companies.");
+            }
 
             $findUser = User::find($fullId);
             if (!$findUser) {
                 throw new Exception('Usuario não cadastrado');
             }
+
+            if ($companies) {
+                $existCompanies = array();
+                foreach ($companies as $key => $company) {
+                    $findCompany = Company::find($company['company_id']);
+                    if ($findCompany) {
+                        array_push($existCompanies, $findCompany);
+                    }
+                }
+                if (!(count($existCompanies) === count($companies))) {
+                    throw new Exception('Todas as empresas informadas precisam existir');
+                }
+                foreach ($existCompanies as $key => $company) {
+                    $newRelationUserCompany = new User_Company();
+                    $existRelation =  $newRelationUserCompany::whereCompany_id($company->id);
+                    if(!$existRelation){
+                        $newRelationUserCompany->user_id = $findUser->id;
+                        $newRelationUserCompany->company_id =$company->id;
+                        $newRelationUserCompany->save();
+                    }
+                   
+                }
+            }
+            $findUser->companys;
             $findUser->email =  $email ?: $findUser->email;
             $findUser->name =  $name ?: $findUser->name;
             $findUser->phone = $phone ?: $findUser->phone;

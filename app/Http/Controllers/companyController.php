@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\User;
 use App\Models\User_Company;
 use Exception;
+use Hamcrest\Arrays\IsArray;
 use Illuminate\Http\Request;
 
 class CompanyController extends Controller
@@ -70,7 +71,10 @@ class CompanyController extends Controller
             if (!$state) {
                 throw new Exception('Precisa informar um estado.');
             }
-            
+            if(!is_array($users)){
+                throw new Exception('Precisa informar usuario numa lista');
+
+            }
            
 
             $existCnpj = Company::where('cnpj', $cnpj)->first();

@@ -10,6 +10,8 @@ class Company extends Model
     use HasFactory;
     protected $table = 'company';
     protected $fillable = ['name', 'cnpj'];
+    protected $hidden =['pivot'];
+
     public function address(){
         return $this->hasOne(Address::class,'company_id');
     }

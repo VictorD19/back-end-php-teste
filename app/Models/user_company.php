@@ -10,6 +10,7 @@ class User_Company extends Model
     protected $table = 'user_company';
     use HasFactory;
     protected $fillable = ['user_id', 'company_id'];
+    protected $hidden =['pivot'];
 
 
 }
