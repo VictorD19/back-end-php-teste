@@ -48,3 +48,50 @@
 ```
 
 **Obs:** o endpoint possui validações de cnpj, então precisa ser enviado no formato apresenato encima;
+
+## Instalação
+
+1 Clone o repositorio
+~~~
+git clone https://github.com/VictorD19/back-end-php-teste.git
+~~~
+2 Entre na pasta criada
+~~~
+cd back-end-php-teste
+~~~
+3 para que o projeto funcione Digite o seguiente 
+~~~
+composer install
+~~~
+4 agora crie um arquivo **.env** utilizando o arquivo **.env.exemplo** como exemplo
+dentro no arquivo precisa configura o banco de dados 
+~~~
+DB_CONNECTION=mysql -> seu banco, utilizei postgres (pgsql)
+DB_HOST=127.0.0.1 -> 
+DB_PORT=3306 -> port do banco
+DB_DATABASE= ' '  -> nome de seu banco
+DB_USERNAME= ' '  -> usuario de seu banco
+DB_PASSWORD= ' '  -> senhade seu banco
+~~~
+5 inicie as migrations (tabelas)
+~~~
+php artisan migrate
+~~~
+se ocurrer tudo certo teras esta resposta
+~~~
+Migrating: 2019_12_14_000001_create_personal_access_tokens_table
+Migrated:  2019_12_14_000001_create_personal_access_tokens_table (71.25ms)
+Migrating: 2022_03_19_174451_user
+Migrated:  2022_03_19_174451_user (24.47ms)
+Migrating: 2022_03_19_174600_company
+Migrated:  2022_03_19_174600_company (21.44ms)
+Migrating: 2022_03_19_174620_address
+Migrated:  2022_03_19_174620_address (28.35ms)
+Migrating: 2022_03_19_175314_user_company
+Migrated:  2022_03_19_175314_user_company (21.34ms)
+~~~
+
+6 Agora é so iniciar o servidor 
+~~~
+php artisan serve
+~~~ 
